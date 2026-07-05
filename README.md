@@ -69,6 +69,44 @@ graph TD
 
 ## 3. 📘 Comprehensive Systems Programming Thesis: Language Choice & Design Trade-offs
 
+---
+
+## 🛠️ Systems Programming Languages Used in AuroraOS
+
+AuroraOS is a polyglot system built using a specific combination of programming languages, selected according to their proximity to hardware and suitability for operating system simulation:
+
+1. **C (GNU C99)**:
+   * **Location**: Found in `kernel/src/` (dynamic kernel library) and `bare_metal/kernel/`, `bare_metal/arch/`, `bare_metal/drivers/`, `bare_metal/libc/`.
+   * **Purpose**: Low-level kernel logic. It manages memory structures (`pcb_t`, `memory_block_t`), linked-list pointer operations, dynamic heap allocation, scheduling algorithms, and hardware interactions (VGA screen drawing, mouse packet reading, interrupt descriptors).
+   * **Why It is Used**: C provides absolute control over memory layout and direct pointer manipulation without the overhead of a garbage collector or a language runtime environment. It compiles directly to native machine code.
+
+2. **Assembly (x86 / Intel Syntax NASM)**:
+   * **Location**: Found in `bare_metal/boot/` (`boot.asm`) and `bare_metal/arch/x86/` (loader scripts and stubs).
+   * **Purpose**: CPU initialization and interrupt vector entry points. Assembly is used to set the stack pointer, transition the processor into 32-bit Protected Mode, load the Global Descriptor Table (GDT) and Interrupt Descriptor Table (IDT) pointers, and handle raw hardware register switches.
+   * **Why It is Used**: High-level compilers generate code that expects an already configured machine. Assembly is the only way to execute CPU instructions like `lgdt`, `lidt`, `cli`, `sti`, `iret`, and `in`/`out` port statements.
+
+3. **Python (Python 3.8 - 3.14)**:
+   * **Location**: Found in the project root (`launcher.py`), `apps/` (desktop apps), `system/` (VFS and auth services), `ui/` (Aurora Shell GUI), and `user/` (session management).
+   * **Purpose**: High-level user space environment and system virtualization. Python is responsible for rendering the desktop UI (Tkinter), serializing configuration files, routing terminal emulator commands, simulating storage block streams (`virtual_disk.img`), and loading the compiled C DLL via `ctypes`.
+   * **Why It is Used**: Developing graphic interfaces and user databases in C requires thousands of lines of low-level boilerplate. Python enables high-speed prototyping of the operating system shell and virtual file system while remaining bound to the core C kernel logic via ctypes.
+
+4. **GNU Make (Makefile Syntax)**:
+   * **Location**: Found in the root directory (`Makefile`) and `bare_metal/Makefile`.
+   * **Purpose**: Build automation.
+   * **Why It is Used**: Compiling a dual-architecture system requires multi-stage assembly, compilation, dynamic linking, and disk image creation. Makefiles define dependencies and build scripts in a single command (`make run` or `make baremetal`).
+
+5. **JSON (JavaScript Object Notation)**:
+   * **Location**: Found in `config/system/` (VFS database metadata) and `config/user/` (session tracking and user registry).
+   * **Purpose**: Persistent structured data storage.
+   * **Why It is Used**: It provides a lightweight, human-readable structure for mapping VFS inodes and user sessions, easily parseable by Python's standard library.
+
+### 🚫 Why Other Languages Were NOT Used
+
+* **C++**: Introduces name mangling, complex runtime libraries (for exceptions and Run-Time Type Information), and object-oriented features that require manual memory management overrides in freestanding code. C is simpler and prevents compiler-injected hidden paths.
+* **Rust**: Although Rust offers modern memory safety and concurrency benefits, its strict compile-time checks (the borrow checker) make writing direct hardware and pointer-manipulation codes highly verbose, requiring wrapping almost all kernel code in `unsafe {}` blocks. C is the preferred standard for foundational learning.
+* **Ruby, Go, Java, or C#**: These high-level languages rely on massive runtimes, virtual machines, or active garbage collectors, which makes them entirely unsuitable for bare-metal execution and introduces unpredictable latencies in kernel simulations.
+
+
 ### 1. Choice of Assembly (NASM / x86 Assembly)
 * **Where It Is Used**: Setting up the bootloader (`boot.asm`), GDT/IDT descriptors initialization, interrupt handler routing, and executing context switches.
 * **Why High-Level Languages Fail Here**: High-level compilers (like C or Rust) generate instructions assuming an already-initialized execution environment (stack pointer set, segment registers configured, interrupts masked). Assembly is required to:
