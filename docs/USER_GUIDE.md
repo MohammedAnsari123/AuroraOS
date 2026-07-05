@@ -27,7 +27,7 @@ Welcome to **AuroraOS** - an educational lightweight operating system with a bea
 
 1. **Navigate to the AuroraOS directory:**
    ```bash
-   cd "Building My Own Operating System"
+   cd "AuroraOS"
    ```
 
 2. **Launch AuroraOS:**
@@ -426,3 +426,23 @@ To reset AuroraOS to defaults:
 **Enjoy using AuroraOS! 🌌**
 
 *Where education meets innovation*
+
+
+---
+
+## 📖 Systems Theory for the Everyday User
+
+Operating systems seem magical, but they follow strict deterministic logic. Here is how your actions translate to under-the-hood events:
+
+### 1. When you Create a File in File Manager
+1. **User Request**: You click "New File" and enter `notes.txt`.
+2. **System Service Call**: The File Manager app makes a call to the Virtual File System (VFS): `vfs.create_file("/home/aurora/notes.txt")`.
+3. **Inode Allocation**: The VFS finds an unused Inode slot, registers `notes.txt` as a child of `/home/aurora/`, and sets the size to `0`.
+4. **Disk Write**: VFS writes the updated Inode structure to `virtual_disk.img` and updates `filesystem_metadata.json`.
+5. **UI Update**: The File Manager refreshes, reading the Inode table to show the new icon.
+
+### 2. When you Delete a Folder
+1. **Recursion**: The VFS checks if the folder contains files.
+2. **Block Deallocation**: If files exist, the VFS marks all data blocks associated with those files as "free" in the Superblock bitmap.
+3. **Inode Clearing**: The Inode entries for the files and the folder itself are wiped clean.
+4. **No Crash Safety**: In older versions, deleting closed the application due to standard stream errors. Now, the File Manager updates live and stays open safely.

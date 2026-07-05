@@ -23,7 +23,7 @@ Congratulations! You now have a fully functional educational operating system!
 ```bash
 # Open terminal/command prompt
 # Navigate to the project folder
-cd "C:\Users\ANSARI MOHAMMED\OneDrive\Desktop\Building My Own Operating System"
+cd "c:\Users\ANSARI MOHAMMED\OneDrive\Desktop\Software\AuroraOS"
 
 # Run AuroraOS
 python launcher.py
@@ -507,3 +507,47 @@ Have fun exploring, learning, and customizing!
 ---
 
 **Happy exploring! 🚀🌌**
+
+
+---
+
+## 🛠️ Deep-Dive: File System & Dynamic Binding Internals
+
+This section outlines the detailed binary layouts of the virtual filesystem and ctypes binary alignments.
+
+### 1. FAT-like Virtual File System (VFS) Layout
+The file system stores directories and files in a single flat file called `virtual_disk.img` (100MB). It virtualizes storage using block addressing:
+
+| Section | Size | Purpose |
+|---------|------|---------|
+| **Superblock** | Block 0 | Stores filesystem metadata (disk size, block size, inode count, free block bitmap) |
+| **Inode Table** | Blocks 1 - 100 | Stores structures containing file names, file sizes, creation timestamps, parent directory ID, and pointers to data blocks |
+| **Data Blocks** | Blocks 101 - End | 4096-byte blocks storing raw file contents |
+
+#### Allocation Mechanics:
+When a file is modified:
+1. The filesystem splits the content into 4KB data blocks.
+2. It looks up the Free Block Bitmap in the Superblock to find available data block indices.
+3. It updates the file's Inode to point to these data blocks.
+4. The metadata index file (`filesystem_metadata.json`) keeps a fast lookup table of active directory nodes for GUI speed, which is synchronized on shutdown.
+
+### 2. Binary Alignment and Dynamic Binding via `ctypes`
+Dynamic binding requires matching the structure alignment rules of the host OS and C compiler.
+
+#### Alignment Rules:
+On a 32-bit system (or 32-bit compiler target):
+* `uint32_t` is aligned to a 4-byte boundary.
+* A structure containing three `uint32_t` fields is exactly 12 bytes.
+
+In Python:
+```python
+class HeapBlockInfo(ctypes.Structure):
+    _fields_ = [
+        ("address", ctypes.c_uint32),
+        ("size", ctypes.c_uint32),
+        ("is_free", ctypes.c_uint32),
+    ]
+```
+Python's `ctypes` module calculates structural offsets automatically. If there is a mismatch (e.g. compiling the DLL as 32-bit but running Python as 64-bit), the alignment shifts. AuroraOS handles this mismatch by:
+1. Catching dynamic linking load failures.
+2. Gracefully falling back to a pure Python emulation kernel that matches the linked-list heap math.

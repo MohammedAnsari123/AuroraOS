@@ -66,3 +66,22 @@ Here is a structured path to take this starter OS to a functional, modern-ish to
 - **Day 49-51**: Implement basic System Calls (syscalls) allowing user programs to request kernel services (like printing on screen).
 - **Day 52-55**: Write a basic ATA/IDE disk driver to read/write sectors.
 - **Day 56-60**: Design and implement a simple Virtual File System (VFS) and an elementary filesystem (like FAT16 or a custom one) to read and load external programs.
+
+
+---
+
+## 📟 Assembly Bootstrap & Linker Internals
+
+This section describes the assembly structure and compiler configurations for the bootable image.
+
+### 1. Linker Script (`linker.ld`)
+The linker script is crucial for x86 bootable OS binaries. It specifies the exact order of section placing:
+* **`ENTRY(_start)`**: Sets the binary entry point to the `_start` label in `boot.asm`.
+* **`. = 1M` (1 Megabyte)**: The kernel is loaded at physical memory address `1MB`. Memory below 1MB is reserved for BIOS variables, VGA graphics buffer, and legacy hardware.
+* **`.multiboot`**: Places the multiboot header at the very beginning of the binary, satisfying the GRUB loader specification.
+
+### 2. Multiboot Header Structure
+The multiboot header consists of:
+* **Magic Number**: `0x1BADB002` (expected by GRUB/QEMU).
+* **Flags**: Specifies if the kernel requires page alignment or memory information.
+* **Checksum**: Must satisfy `(magic + flags + checksum) == 0`.

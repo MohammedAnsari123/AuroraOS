@@ -561,3 +561,28 @@ Launcher → Launch shell
 **AuroraOS Architecture v1.0** 🌌
 
 *Designed for learning, built for understanding*
+
+
+---
+
+## 📈 Mathematics and Computational Analysis
+
+This section analyzes the computational complexity and behavior of the kernel core algorithms.
+
+### 1. Space and Time Complexity analysis
+* **First-Fit Memory Allocator**:
+  * **Allocation (`kmalloc`)**: Time complexity is $O(N)$ where $N$ is the number of allocated/free blocks in the list. Space complexity is $O(1)$ auxiliary, with $O(M)$ overhead where $M$ is the number of headers (each header takes 16 bytes on 32-bit systems).
+  * **Deallocation (`kfree`)**: Time complexity is $O(1)$ because we have double-linked list pointers (`next` and `prev`) allowing instant updates and coalescence.
+* **Process Scheduler**:
+  * **Round-Robin Scheduling**: $O(1)$ to dequeue the next process and run it. $O(P)$ to insert back or check states where $P$ is the active process count.
+
+### 2. State Transition Model of a Process
+```mermaid
+stateDiagram-v2
+    [*] --> READY: process_create()
+    READY --> RUNNING: scheduler_run()
+    RUNNING --> READY: Time Quantum Expired
+    RUNNING --> WAITING: IO Block / sleep()
+    WAITING --> READY: IO Complete / timer_ticks()
+    RUNNING --> [*]: process_kill()
+```

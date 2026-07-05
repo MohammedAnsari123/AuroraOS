@@ -192,7 +192,7 @@ AuroraOS/
 
 ```bash
 # Navigate to project directory
-cd "Building My Own Operating System"
+cd "AuroraOS"
 
 # Launch AuroraOS
 python launcher.py
@@ -595,3 +595,47 @@ This project represents a significant achievement in educational operating syste
 - Further development ✅
 
 **Total Project Completion: 100%** 🎉
+
+
+---
+
+## 📖 Deep Systems Architecture Analysis: Theory & Algorithms
+
+This section details the primary algorithms and systems programming abstractions utilized in the core of AuroraOS.
+
+### 1. Memory Management: First-Fit Linked List Heap Allocator
+The dynamic memory allocator inside the C kernel (`kernel/src/memory.c`) manages a contiguous block of simulated physical RAM. It utilizes a **linked-list allocation strategy**.
+
+#### The Block Structure:
+Each block of memory is preceded by a metadata header:
+```c
+typedef struct memory_block {
+    size_t size;             // Size of the payload in bytes
+    bool is_free;            // Allocation state flag
+    struct memory_block *next; // Pointer to next block in list
+    struct memory_block *prev; // Pointer to previous block in list
+} memory_block_t;
+```
+
+#### Algorithms Utilized:
+1. **First-Fit Search**:
+   When `kmalloc(size)` is called, the allocator traverses the linked list from the beginning (`head`) and selects the *first* block that is free and has `size >= requested_size`.
+   * **Why First-Fit?** It has a temporal complexity of $O(N)$ but is extremely simple to implement and tends to cluster allocations at the beginning of the memory space, leaving larger free blocks at the end.
+   * **Comparison with Best-Fit**: Best-fit searches the entire list to find the block closest in size, reducing internal fragmentation but taking a guaranteed $O(N)$ time. Worst-fit chooses the largest block to leave a large remainder.
+
+2. **Block Splitting**:
+   If the selected block is significantly larger than the requested size (header size + payload size), it is split into two blocks:
+   * Block A: Marked as allocated, size set to requested size.
+   * Block B: Inserted into the linked list immediately after Block A, marked as free, size set to the remaining bytes.
+
+3. **Coalescing**:
+   When `kfree(ptr)` is called, the allocator marks the target block as free. To prevent fragmentation, it checks the adjacent blocks:
+   * If `block->next` is free, merge Block and `block->next` into a single block.
+   * If `block->prev` is free, merge `block->prev` and Block into a single block.
+   * This ensures that consecutive free blocks are always unified, maintaining maximum contiguous memory availability.
+
+### 2. Process Scheduler: Round-Robin Queue
+The task manager scheduler simulates a primitive multitasking OS environment.
+* **Process Control Block (PCB)**: Stores PID, Name, Priority, Program Counter (simulated), Execution State (READY, RUNNING, WAITING), and CPU Tick count.
+* **Round-Robin Scheduling**: The scheduler runs at periodic intervals. It picks the next process in the queue that is in the `READY` state, assigns it a quantum (ticks), sets its state to `RUNNING`, executes it, and then places it back at the end of the queue, ensuring equal CPU allocation.
+* **Kill Safeguards**: Processes with `PID < 3` (`init` and `kthreadd`) are marked as kernel-critical. Any attempt to kill them throws an OS access violation error to prevent system instability.

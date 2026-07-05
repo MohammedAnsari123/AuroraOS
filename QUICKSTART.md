@@ -15,7 +15,7 @@ python --version
 ### Step 2: Navigate to AuroraOS
 
 ```bash
-cd "C:\Users\ANSARI MOHAMMED\OneDrive\Desktop\Building My Own Operating System"
+cd "c:\Users\ANSARI MOHAMMED\OneDrive\Desktop\Software\AuroraOS"
 ```
 
 ### Step 3: Launch AuroraOS
@@ -272,3 +272,38 @@ After getting comfortable with AuroraOS:
 5. **Contribute** improvements to the project!
 
 **Happy exploring!** ✨
+
+
+---
+
+## 🎓 Systems Science: The Boot Sequence Explained
+
+For students learning system architecture, here is exactly what happens when you launch AuroraOS:
+
+### 1. Booting the Hybrid Environment (Python & C DLL)
+```mermaid
+sequenceDiagram
+    participant User as User Shell
+    participant Python as Python Launcher
+    participant C_DLL as C Kernel DLL (ctypes)
+    participant Disk as virtual_disk.img
+    
+    User->>Python: Run python launcher.py
+    Python->>Python: Verify environment & dependencies
+    Python->>C_DLL: Load kernel.dll / kernel.so
+    C_DLL->>C_DLL: Initialize C-heap allocator (first-fit list)
+    Python->>Disk: Check virtual disk & metadata
+    alt Disk missing
+        Python->>Disk: Generate 100MB blank virtual_disk.img
+    end
+    Python->>Python: Initialize Tkinter Aurora Shell GUI
+    Python->>User: Display Login Screen
+```
+
+### 2. Booting the Bare-Metal OS (x86 QEMU)
+When you execute `make run-baremetal`:
+1. **BIOS**: The system firmware performs Power-On Self-Test (POST) and loads the Multiboot bootloader (QEMU acts as the BIOS).
+2. **Multiboot Entry**: The bootloader locates the multiboot header in `bare_metal/boot/boot.asm` and hands control to our assembly routine.
+3. **Protected Mode**: The assembly code sets up a temporary boot stack, disables CPU paging, and sets segment registers to 32-bit Flat Mode.
+4. **C Kernel Transition**: Assembly calls `kernel_main()` inside `bare_metal/kernel/kernel.c`.
+5. **Driver Initialization**: The kernel registers GDT, IDT (Interrupt Descriptor Table) vectors, PIC interrupts, mouse/keyboard handler ports, and switches VGA memory to 320x200 256-color graphics mode (`Mode 13h`).

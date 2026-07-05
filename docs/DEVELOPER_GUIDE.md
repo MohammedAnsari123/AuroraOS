@@ -67,7 +67,7 @@ gcc --version
 
 1. **Clone/Download the project:**
    ```bash
-   cd "Building My Own Operating System"
+   cd "AuroraOS"
    ```
 
 2. **Install development tools (optional):**
@@ -629,3 +629,39 @@ logger.error("Error message")
 **Happy coding! 🌌**
 
 *Building operating systems, one line at a time*
+
+
+---
+
+## 🧪 Developer Architecture & API References
+
+### 1. Writing a New Custom C-Kernel Function
+To add a new routine to the C Kernel:
+1. Open [kernel/include/kernel.h](file:///c:/Users/ANSARI%20MOHAMMED/OneDrive/Desktop/Software/AuroraOS/kernel/include/kernel.h) or the appropriate header and declare your function:
+   ```c
+   __declspec(dllexport) int get_system_uptime_ticks(void);
+   ```
+2. Implement your function in the source file:
+   ```c
+   int get_system_uptime_ticks(void) {
+       return scheduler_ticks; // Global tick counter
+   }
+   ```
+3. Recompile the library using the Makefile:
+   ```bash
+   make clean && make
+   ```
+4. Bind the function in the Python connector [system/core/kernel_connector.py](file:///c:/Users/ANSARI%20MOHAMMED/OneDrive/Desktop/Software/AuroraOS/system/core/kernel_connector.py):
+   ```python
+   self.lib.get_system_uptime_ticks.argtypes = []
+   self.lib.get_system_uptime_ticks.restype = ctypes.c_int
+   ```
+5. Implement the simulation fallback inside `PythonKernelSimulator` to prevent crashes when the C library is compiled as a mismatch.
+
+### 2. Debugging Memory Violations
+If a memory violation occurs (segmentation fault) in the DLL, Windows will terminate the Python process instantly. To debug this:
+* Compile with debugging symbols enabled by adding `-g` to the compiler flags in the [Makefile](file:///c:/Users/ANSARI%20MOHAMMED/OneDrive/Desktop/Software/AuroraOS/Makefile).
+* Run the Python script using a native debugger like GDB:
+  ```bash
+  gdb --args python launcher.py
+  ```
