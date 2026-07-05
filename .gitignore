@@ -1,0 +1,67 @@
+# ==============================================================================
+# AuroraOS Git Ignore Configuration
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL support files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS-specific compiled binaries and build artifacts
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.exe
+*.bin
+*.sys
+*.elf
+*.a
+*.lib
+build/
+dist/
+out/
+
+# Virtual disk image and system files (generated at runtime)
+*.img
+virtual_disk.img
+filesystem_metadata.json
+session.json
+users.json
+
+# Local configurations / generated state directories
+config/system/
+config/user/
+**/config/system/
+**/config/user/
+
+# IDEs, text editors and workspace settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*.tmp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/

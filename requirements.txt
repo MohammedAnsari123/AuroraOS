@@ -1,0 +1,20 @@
+# AuroraOS Requirements
+# Python dependencies for running AuroraOS
+
+# No external dependencies required!
+# AuroraOS uses only Python standard library:
+# - tkinter (GUI - usually comes with Python)
+# - json (data storage)
+# - os, sys (system operations)
+# - hashlib (password hashing)
+# - time, datetime (time operations)
+
+# For development (optional):
+# pylint>=2.0.0
+# black>=22.0.0
+
+# Note: Ensure Python 3.8+ is installed
+# On Windows: tkinter is included
+# On Linux: install python3-tk if needed
+#   sudo apt-get install python3-tk  # Debian/Ubuntu
+#   sudo yum install python3-tkinter  # Fedora/RHEL
